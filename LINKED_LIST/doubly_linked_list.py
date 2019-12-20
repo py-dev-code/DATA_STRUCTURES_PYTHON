@@ -72,17 +72,21 @@ class LinkedList(object):
         return data
 
     def remove_last(self):
-        if self.isEmpty(): raise Exception("List is Empty")
+        if self.isEmpty():
+            raise Exception("List is Empty")
 
-        data = self.tail.data
-        self.tail = self.tail.prev
+        data = self.tail.data        
+        if self.head == self.tail:
+            self.head = self.tail = None
+            return data
+            
+        self.tail = self.tail.prev   
+
         if self.tail:
             self.tail.next = None
-
-        if self.tail is None:
-            self.head = self.tail = None
-
-        return data
+            
+        if self.isEmpty():
+            self.head = self.tail = None        
 
     def remove(self, node):
         
