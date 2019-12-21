@@ -1,243 +1,220 @@
+class Node(object):
+    def __init__(self, data, next=None):
+        self.data = data
+        self.next = next
+    def __repr__(self):
+        return str(self.data)
+
+class LinkedList(object):
+    def __init__(self):
+        self.head = None
+        self.tail = None
+    def add_in_start(self, value):
+        if self.head is None:
+            self.head = self.tail = Node(value)
+        else:
+            self.head = Node(value, self.head)
+    def add_in_end(self, value):
+        if self.head is None:
+            self.head = self.tail = Node(value)
+        else:
+            node = Node(value)
+            self.tail.next = node
+            self.tail = node
+    def remove_head(self):
+        data = self.head.data
+        if self.head == self.tail:            
+            self.head = self.tail = None
+        else:
+            self.head = self.head.next
+        return data
+    def __len__(self):
+        result = 0
+        node = self.head
+        while node:
+            result += 1
+            node = node.next
+        return result
+    def __repr__(self):
+        result = []
+        node = self.head
+        while node:
+            result.append(str(node.data))
+            node = node.next
+        return ' -> '.join(result)
+
 class Graph(object):
     '''
         https://www.geeksforgeeks.org/generate-graph-using-dictionary-python/
     '''
-    def __init__(self, graph_dict = None):
-        self.graph_dict = graph_dict
-
-    def add_vertex(self, vertex):
-        # Since graph is represented by a Dictionary. 
-        # This method will simply add the vertex if it doesn't exist else do nothing.
-        # This is to avoid KeyError.        
+    def __init__(self):
+        self.data = {}
+    
+    def add_node(self, node):
         try:
-            key = self.graph_dict[vertex]
-        except KeyError:
-            self.graph_dict[vertex] = []
-
-    def add_edge(self, v1, v2):
-        self.add_vertex(v1)
-        self.add_vertex(v2)
-        # This will add 1 directional edge. Call this method twice in order to add a 2-way Edge.
-        self.graph_dict[v1].append(v2)
-        
+            value = self.data[node]
+        except:
+            self.data[node] = []
+    
+    def add_edge(self, node1, node2):
+        self.add_node(node1)
+        self.add_node(node2)
+        self.data[node1].append(node2)
+        self.data[node2].append(node1)
+    
     def generate_edges(self):
-        result = []
-        for vertex in self.graph_dict:
-            for neighbor in self.graph_dict[vertex]:
-                result.append((vertex, neighbor))        
-        return str(result)
-
+        for node in self.data:
+            for nbhr in self.data[node]:
+                print(f'{node} -> {nbhr}')
+    
     def __repr__(self):
         result = '{\n'
-        for vertex in self.graph_dict:
-            result = result + vertex + ": "
-            result = result + str(self.graph_dict[vertex]) + "\n"
+        for node in self.data:
+            result = result + node + ': ' + ', '.join([str(x) for x in self.data[node]]) + '\n' 
         result += '}'
         return result
 
-    def find_any_possible_path(self, start, end, path = []):
-        path.append(start)
-        if start == end:
-            return path
-        for v in self.graph_dict[start]:
-            if v not in path:
-                new_path = self.find_any_possible_path(v, end, path)
-                if new_path:
-                    return new_path
-                else:
-                    return None
+    def dfs_complete(self):
+        '''
+            This algorithm will do a Complete Depth First Search of the Graph that is it will include the Disconnected 
+            Nodes as well. It will use a Stack to implement it.
+            If we just need to do a DFS from a Node then implement the Util method by passing the starting Node.
+        '''
+        def dfs_util(node, visit_status):
+            stack = LinkedList()
+            stack.add_in_start(node)
+            visit_status[node] = True
+            while len(stack) > 0:
+                node = stack.remove_head()
+                print(node, end=' ')
 
-    def dfs_recursion_complete(self):
-        # This method will do a complete Depth First Search by using Recursion.
-        # It will also cover the disconnected Points.
-        visit_status = {}
-        for v in self.graph_dict:
-            visit_status[v] = False
-        for v in self.graph_dict:
-            if not visit_status[v]:
-                self.dfs_dict(v, visit_status)
-        print()
-
-    def dfs_recursion(self, vertex):
-        # This method will just do a DFS search starting with given vertex.
-        # It will not be able to cover the disconnected points.
-        visit_status = {}
-        for v in self.graph_dict:
-            visit_status[v] = False
-        self.dfs_dict(vertex, visit_status)
-        print()
-
-    def dfs_dict(self, vertex, visit_status):
-        visit_status[vertex] = True
-        print(vertex, end = ' ')
-        for i in self.graph_dict[vertex]:
-            if not visit_status[i]:
-                self.dfs_dict(i, visit_status)
-
-    def bfs_iter(self, vertex):
-        # This method will do the Breadth First Search by using a Queue. It will not cover disconnected points.
-        visit_status = {}
-        for v in self.graph_dict:
-            visit_status[v] = False
-        queue = []
-        queue.append(vertex)
-        visit_status[vertex] = True        
-        while len(queue) > 0:
-            v = queue.pop(0)
-            print(v, end = ' ')
-            for i in self.graph_dict[v]:
-                if not visit_status[i]:
-                    queue.append(i)
-                    visit_status[i] = True
-        print()
-
-    def dfs_iter_complete(self):
-        # This method will do a complete DFS search by using Stack mean it will cover the disconnected points as well.
-        # Similar method can be created for a complete BFS as well.
-        visit_status = {}
-        for v in self.graph_dict:
-            visit_status[v] = False
-        for v in self.graph_dict:
-            if not visit_status[v]:
-                self.dfs_iter_util(v, visit_status)
-        print()
-
-    def dfs_iter_util(self, vertex, visit_status):
-        stack = []
-        stack.append(vertex)
-        visit_status[vertex] = True
-        while len(stack) > 0:
-            v = stack.pop()
-            print(v, end = ' ')
-            for i in self.graph_dict[v]:
-                if not visit_status[i]:
-                    stack.append(i)
-                    visit_status[i] = True
-
-    def dfs_iter(self, vertex):
-        # This method will do the Depth First Search by using a Stack. It wont cover disconnected points.
-        # Use the reversed method inside the for loop of popped vertex in order to match the output with recusrion method.
-        # If reversed is not used then output will be different but both will be a valid Depth First Search.
-        visit_status = {}
-        for v in self.graph_dict:
-            visit_status[v] = False
-        stack = []
-        stack.append(vertex)
-        visit_status[vertex] = True
+                for nbhr in self.data[node]:
+                    if not visit_status[nbhr]:
+                        stack.add_in_start(nbhr) 
+                        visit_status[nbhr] = True
         
-        while len(stack) > 0:
-            v = stack.pop()
-            print(v, end = ' ')            
-            for i in self.graph_dict[v]:
-                if not visit_status[i]:
-                    stack.append(i)
-                    visit_status[i] = True
-        print()
-
-    def get_first_possible_path(self, start, end):
-        # This method will return the first possible path between given vertex.
-        # If no path exists between the two then it will return.
         visit_status = {}
-        for v in graph.graph_dict:
-            visit_status[v] = False
-        queue = []
-        path = []
-        queue.append(start)
-        visit_status[start] = True
-        while len(queue) > 0:
-            v = queue.pop(0)
-            path.append(v)
-            if v == end:
-                return path
-            for i in self.graph_dict[v]:
-                if not visit_status[i]:
-                    queue.append(i)
-                    visit_status[i] = True
-        return None     
+        for node in self.data:
+            visit_status[node] = False
+        for node in self.data:
+            if not visit_status[node]:
+                dfs_util(node, visit_status)
+
+    def bfs_complete(self):
+        '''
+            This algorithm will do a Complete Breadth First Search of the Graph that is it will include the Disconnected 
+            Nodes as well. It will use a Queue to implement it.
+            If we just need to do a BFS from a Node then implement the Util method by passing the starting Node.
+        '''
+        def bfs_util(node, visit_status):
+            queue = LinkedList()
+            queue.add_in_end(node)
+            visit_status[node] = True
+            while len(queue) > 0:
+                node = queue.remove_head()
+                print(node, end=' ')
+                for nbhr in self.data[node]:
+                    if not visit_status[nbhr]:
+                        queue.add_in_end(nbhr)
+                        visit_status[nbhr] = True 
+        
+        visit_status = {}
+        for node in self.data:
+            visit_status[node] = False
+        for node in self.data:
+            if not visit_status[node]:
+                bfs_util(node, visit_status)                
+
+    def get_any_path(self, start, end):
+        '''
+            We will do a BFS on the Graph starting from the Start Node. If we get the End node during Traversal
+            then Path will be returned.
+            If Traversal Loop is completed then we will return "Path Not Found"
+        '''
+        def get_any_path_util(node, end, visit_status):
+            result = []
+            queue = LinkedList()
+            queue.add_in_end(start)
+            visit_status[start] = True
+            
+            while len(queue) > 0:
+                node = queue.remove_head()
+                result.append(node)
+                if node == end:
+                    return ' -> '.join(result)
+                for nbhr in self.data[node]:
+                    if not visit_status[nbhr]:
+                        queue.add_in_end(nbhr)
+                        visit_status[nbhr] = True
+            return 'Path Not Found'
+
+        visit_status = {}
+        for node in self.data:
+            visit_status[node] = False
+        return get_any_path_util(start, end, visit_status)
 
     def get_all_paths(self, start, end):
-        # Algorithm:
-        # Create list path for tracking visited nodes in current path.
-        # Create list paths for tracking found paths.
-        # Create dictionary visit_status to track the visited status.
-        # Call util methods for start and end nodes.
+        '''   
+            This algorithm uses a slight tweak in normal Graph Traversal.
+            Declare 2 lists: path and paths.
+            Call a util method with start, end, visit_status, path and paths.
+            Now, once we are done with processing util for a start node, pop the start node (or the last node) from path and
+            set its visit_status to False so this node can be found by other possible paths as well.
+        '''
+        def get_all_paths_util(start, end, visit_status, path, paths):
+            path.append(start)
+            visit_status[start] = True
+
+            if start == end:
+                paths.append(list(path))
+            else:
+                for nbhr in self.data[start]:
+                    if not visit_status[nbhr]:
+                        get_all_paths_util(nbhr, end, visit_status, path, paths)
+            node = path.pop()
+            visit_status[start] = False
+
         visit_status = {}
-        for v in self.graph_dict:
-            visit_status[v] = False        
-        paths = []
         path = []
-        self.get_all_paths_util(start, end, visit_status, path, paths)
+        paths = []
+        for node in self.data:
+            visit_status[node] = False
+        get_all_paths_util(start, end, visit_status, path, paths)
         return paths
-    
-    def get_all_paths_util(self, start, end, visit_status, path, paths):
-        # Algorithm:
-        # mark visit status of start node as True.
-        # Append start node in path list.
-        # Check if start = end then add the path list in paths.
-        # take out the start node from the path and update its visit status to False so that other paths can use this node.
-        # if start != end then call this method for all neibhors of start with visit status as False.
-        visit_status[start] = True
-        path.append(start)
-        if start == end:
-            paths.append(list(path))
-        else:
-            for i in self.graph_dict[start]:
-                if not visit_status[i]:
-                    self.get_all_paths_util(i, end, visit_status, path, paths)
-        node = path.pop()
-        visit_status[start] = False     
 
     def get_shortest_path(self, start, end):
-        # Algorithm: Exactly similar to find all paths except here we will compare the length before updating the result.
-        visit_status = {}
-        for v in self.graph_dict:
-            visit_status[v] = False
-        path = []
-        result = []
-        self.get_shortest_path_util(start, end, visit_status, path, result)
-        if len(result) > 0: 
+        '''
+            Get the complete list of paths and choose the shortest length one.
+        '''
+        paths = self.get_all_paths(start, end)     
+        if len(paths) > 0:
+            result = sorted(paths, key = lambda x: len(x))
             return result[0]
-        else: 
-            return None
-
-    def get_shortest_path_util(self, start, end, visit_status, path, result):
-        visit_status[start] = True
-        path.append(start)
-        if start == end:
-            if len(result) == 0:
-                result.append(list(path))
-            elif len(path) < len(result[0]):
-                result[0] = list(path)
-            # result.append(list(path))
         else:
-            for r in self.graph_dict[start]:
-                if not visit_status[r]:
-                    self.get_shortest_path_util(r, end, visit_status, path, result)
-        path.pop()
-        visit_status[start] = False
+            return "Path Not Found"
 
 if __name__ == "__main__":
-    d = {
-        'a': ['c'],
-        'b': ['d'],
-        'c': ['e', 'a'],
-        'd': ['a', 'd'],
-        'e': ['b', 'c'],
-        'f': []
-    }
+    g = Graph()
+    g.add_edge('a', 'b')
+    g.add_edge('a', 'c')
+    g.add_edge('b', 'c')
+    g.add_edge('c', 'd')
+    g.add_edge('c', 'e')
+    g.add_edge('d', 'e')
+    g.add_node('f')
 
-    graph = Graph(d)
-    # print(graph.generate_edges())
-    print(graph)
-    # print(graph.find_any_possible_path('a', 'e', []))
-    # print(graph.find_an
-    # y_possible_path('b', 'e', []))    
-    # graph.dfs_recursion('e')
-    # graph.dfs_recursion_complete()
-    # graph.bfs_iter('e')
-    # graph.dfs_iter('e')
-    # graph.dfs_iter_complete()
-    # print(graph.get_first_possible_path('a', 'b'))
-    # print(graph.get_first_possible_path('c', 'a'))    
-    print(graph.get_all_paths('c', 'a'))
-    print(graph.get_shortest_path('c', 'a'))
+    print(g)
+    g.generate_edges()
+
+    g.dfs_complete()
+    print()
+    g.bfs_complete()
+    print()
+
+    print(g.get_any_path('d', 'f'))
+    print(g.get_all_paths('a', 'e'))
+
+    print('===========')
+    print(g.get_shortest_path('a', 'e'))
+
+
