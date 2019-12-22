@@ -12,108 +12,117 @@ class Node(object):
         self.data = data
         self.left = left
         self.right = right
-        self.height = 1
     def __repr__(self):
         return str(self.data)
 
 class AVLTree(object):
     
-    def __init__(self, key = None):
-        if key is None:
-            self.root = None
-            self.node_count = 0
-        else:
-            self.root = Node(key)
-            self.node_count = 1
-    
-    def insert_key_avl(self, key):
-        self.root = self.insert_key(self.root, key)
+    def __init__(self):
+        self.root = None
 
-    def insert_key(self, root, key):
-        if root is None:
-            return Node(key)
-        if root.data < key:
-            root.right = self.insert_key(root.right, key)
-        else:
-            root.left = self.insert_key(root.left, key)
-
-        l_height = 0 if root.left is None else root.left.height
-        r_height = 0 if root.right is None else root.right.height
-        root.height = max(l_height, r_height) + 1
-
-        return self.balance_node(root, key)
-
-    def remove_key_avl(self, key):
-        return self.remove_key(self.root, key)
-
-    def remove_key(self, root, key):
-        if root is None: return
-
-        if root.data > key:
-            root.left = self.remove_key(root.left, key)
-        elif root.data < key:
-            root.right = self.remove_key(root.right, key)
-        else:
-            # case1,2,3: 1 child is None or both child are None
-            if root.left is None:
-                node = root.right
-                return node
-            elif root.right is None:
-                node = root.left
-                return node
+    def get_height(self):
+        def height_util(root):
+            if root is None:
+                return 0
             else:
-                # case4: Cheat case: Find the successor, give its data to root and remove the successor.
-                successor = root.right
-                while successor.left:
-                    successor = successor.left
-                root.data = successor.data
-                root.right = self.remove_key(root.right, successor.data)
-        return root                
+                return max(height_util(root.left), height_util(root.right)) + 1
+        return height_util(self.root)         
 
-    def balance_node(self, root, key):
-        l_height = 0 if root.left is None else root.left.height
-        r_height = 0 if root.right is None else root.right.height
-        bf = l_height - r_height
-
-        if bf == 2 and root.left.data > key:
-            # left-left case
-            return self.rotate_right(root)
-        elif bf == -2 and root.right.data < key:
-            # right-right case
-            return self.rotate_left(root)
-        elif bf == 2 and root.left.data < key:
-            # left-right case
-            root.left = self.rotate_left(root.left)
-            return self.rotate_right(root)
-        elif bf == -2 and root.right.data > key:
-            # right-left case
-            root.right = self.rotate_right(root.right)
-            return self.rotate_left(root)
+    def add_value_bst(self, value):
+        def add_value_bst_util(root, value):
+            if root is None:
+                return Node(value)
+            if root.data >= value:
+                root.left = add_value_bst_util(root.left, value)
+            else:
+                root.right = add_value_bst_util(root.right, value)
+            return self.balance(root)                
+        
+        if self.root is None:
+            self.root = Node(value)
         else:
-            return root
+            self.root = add_value_bst_util(self.root, value)  
 
-    def rotate_left(self, root):
-        node = root.right
-        root.right = node.left
-        node.left = root
-        return node
+    def remove_value_bst(self, value):
+        def remove_value_bst_util(root, value):
+            if root is None: return
+            if root.data > value:
+                root.left = remove_value_bst_util(root.left, value)
+            elif root.data < value:
+                root.right = remove_value_bst_util(root.right, value)
+            else:
+                # No child / Only 1 Child
+                if root.left is None:
+                    return root.right
+                elif root.right is None:
+                    return root.left
+                # Both Child case
+                else:
+                    node = root.right
+                    while node.left:
+                        node = node.left
+                    root.data = node.data
+                    node.data = value
+                    root.right = remove_value_bst_util(root.right, value)
+            return self.balance(root)
+            
+        self.root = remove_value_bst_util(self.root, value)              
+    
+    def balance(self, root):
+        def height(root):
+            if root is None:
+                return 0
+            return max(height(root.left), height(root.right)) + 1
 
-    def rotate_right(self, root):
-        node = root.left
-        root.left = node.right
-        node.right = root
-        return node             
+        def rotate_right(root):
+            if root is None: return
+            node = root.left
+            root.left = node.right
+            node.right = root
+            return node
+
+        def rotate_left(root):
+            if root is None: return
+            node = root.right
+            root.right = node.left
+            node.left = root
+            return node
+
+        if root is None: return
+        lh = height(root.left)
+        rh = height(root.right)
+
+        if lh - rh > 1:
+            if root.left.left is not None:
+                return rotate_right(root)                
+            else:
+                root.left = rotate_left(root.left)
+                return rotate_right(root)
+        elif rh - lh > 1:
+            if root.right.right is not None:
+                return rotate_left(root)                
+            else:
+                root.right = rotate_right(root.right)
+                return rotate_left(root)
+        return root
 
 if __name__ == "__main__":
     avl = AVLTree()
     for r in [1,2,3,4,5,6,7,8]:
-        avl.insert_key_avl(r)
-    avl.remove_key_avl(7)
-    print_tree(avl.root, avl.root.height, 2)
+        avl.add_value_bst(r)
+    print_tree(avl.root, avl.get_height(), 2)
+    avl.remove_value_bst(5)
+    print_tree(avl.root, avl.get_height(), 2)
     print("###############")
-    avl.remove_key_avl(8)
-    print_tree(avl.root, avl.root.height, 2)
+    avl.remove_value_bst(7)
+    print_tree(avl.root, avl.get_height(), 2)
     print("###############")
-    avl.remove_key_avl(4)    
-    print_tree(avl.root, avl.root.height, 2)
+    avl.remove_value_bst(8)
+    print_tree(avl.root, avl.get_height(), 2)
+    print("***************")
+    avl.remove_value_bst(3)    
+    print_tree(avl.root, avl.get_height(), 2)
     print("###############")
+    avl.remove_value_bst(4)    
+    print_tree(avl.root, avl.get_height(), 2)
+    
