@@ -1,4 +1,4 @@
-from print_tree import print_tree
+# from print_tree import print_tree
 
 '''
     AVL Tree can be implemented similar to a Binary Search Tree. 
@@ -20,7 +20,7 @@ class AVLTree(object):
     def __init__(self):
         self.root = None
 
-    def get_height(self):
+    def height(self):
         def height_util(root):
             if root is None:
                 return 0
@@ -106,23 +106,72 @@ class AVLTree(object):
                 return rotate_left(root)
         return root
 
+    def print_tree(self, node_length=2):
+        def get_parent_level(nodes, level):
+            return nodes[2**(level) - 1: 2**(level+1) - 1]
+
+        def process_level(root, nodes, level, line_length):
+            if root is None: return
+            node_space = line_length // 2**(level)
+            if level == 0:
+                nodes.append(root)
+                print(str(nodes[len(nodes) - 1]).center(node_space, ' '), end='')
+            else:
+                for parent in get_parent_level(nodes, level - 1):
+                    if parent == 'X':
+                        
+                        value = 'X'
+                        print_value = ''
+                        nodes.append(value)
+                        print(print_value.center(node_space, ' '), end='') 
+
+                        value = 'X'
+                        print_value = ''
+                        nodes.append(value)
+                        print(print_value.center(node_space, ' '), end='') 
+
+                    else:
+                        
+                        value = 'X' if parent.left is None else parent.left
+                        print_value = '' if parent.left is None else str(parent.left.data)
+                        nodes.append(value)
+                        print(print_value.center(node_space, ' '), end='')
+
+                        value = 'X' if parent.right is None else parent.right
+                        print_value = '' if parent.right is None else str(parent.right.data)
+                        nodes.append(value)
+                        print(print_value.center(node_space, ' '), end='')
+        
+        height = self.height()
+        nodes = []
+        line_length = 2**(height - 1) * 2 * node_length
+        for l in range(height):
+            process_level(self.root, nodes, l, line_length)
+            print()        
+
 if __name__ == "__main__":
     avl = AVLTree()
     for r in [1,2,3,4,5,6,7,8]:
         avl.add_value_bst(r)
-    print_tree(avl.root, avl.get_height(), 2)
+    avl.print_tree()
+    # (avl.root, avl.get_height(), 2)
     avl.remove_value_bst(5)
-    print_tree(avl.root, avl.get_height(), 2)
+    avl.print_tree()
+    # print_tree(avl.root, avl.get_height(), 2)
     print("###############")
     avl.remove_value_bst(7)
-    print_tree(avl.root, avl.get_height(), 2)
+    avl.print_tree()
+    # print_tree(avl.root, avl.get_height(), 2)
     print("###############")
     avl.remove_value_bst(8)
-    print_tree(avl.root, avl.get_height(), 2)
+    avl.print_tree()
+    # print_tree(avl.root, avl.get_height(), 2)
     print("***************")
     avl.remove_value_bst(3)    
-    print_tree(avl.root, avl.get_height(), 2)
+    avl.print_tree()
+    # print_tree(avl.root, avl.get_height(), 2)
     print("###############")
     avl.remove_value_bst(4)    
-    print_tree(avl.root, avl.get_height(), 2)
+    avl.print_tree()
+    # print_tree(avl.root, avl.get_height(), 2)
     

@@ -1,5 +1,3 @@
-import print_tree
-
 class Node(object):
     
     def __init__(self, data, left = None, right = None):
@@ -147,8 +145,48 @@ class BinarySearchTree(object):
             self.traverse_level_root(root.left, level - 1)
             self.traverse_level_root(root.right, level - 1)
 
-    def print_tree(self):
-        pass
+    def print_tree(self, node_length=2):
+        def get_parent_level(nodes, level):
+            return nodes[2**(level) - 1: 2**(level+1) - 1]
+
+        def process_level(root, nodes, level, line_length):
+            if root is None: return
+            node_space = line_length // 2**(level)
+            if level == 0:
+                nodes.append(root)
+                print(str(nodes[len(nodes) - 1]).center(node_space, ' '), end='')
+            else:
+                for parent in get_parent_level(nodes, level - 1):
+                    if parent == 'X':
+                        
+                        value = 'X'
+                        print_value = ''
+                        nodes.append(value)
+                        print(print_value.center(node_space, ' '), end='') 
+
+                        value = 'X'
+                        print_value = ''
+                        nodes.append(value)
+                        print(print_value.center(node_space, ' '), end='') 
+
+                    else:
+                        
+                        value = 'X' if parent.left is None else parent.left
+                        print_value = '' if parent.left is None else str(parent.left.data)
+                        nodes.append(value)
+                        print(print_value.center(node_space, ' '), end='')
+
+                        value = 'X' if parent.right is None else parent.right
+                        print_value = '' if parent.right is None else str(parent.right.data)
+                        nodes.append(value)
+                        print(print_value.center(node_space, ' '), end='')
+        
+        height = self.height()
+        nodes = []
+        line_length = 2**(height - 1) * 2 * node_length
+        for l in range(height):
+            process_level(self.root, nodes, l, line_length)
+            print() 
 
 if __name__ == "__main__":
     bst = BinarySearchTree()
@@ -176,5 +214,5 @@ if __name__ == "__main__":
     # Level 6: 6
     # Level 7: 8
     print("======================================================")
-    print_tree.print_tree(bst.root, bst.height(), max_node_len = 1)
+    bst.print_tree(1)
 
