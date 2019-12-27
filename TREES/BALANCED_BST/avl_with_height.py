@@ -8,40 +8,49 @@
     Rest all methods will be exactly same as BST methods.
 '''
 class Node(object):
-    def __init__(self, data, left = None, right = None):
+    def __init__(self, data, left=None, right=None):
         self.data = data
         self.left = left
         self.right = right
+        self.height = 1
     def __repr__(self):
-        return str(self.data)
+        return f'{self.data},{self.height}'
 
 class AVLTree(object):
     
     def __init__(self):
         self.root = None
 
-    def height(self):
-        def height_util(root):
+    def update_height(self, node):
+        if node is None: return
+        l_height = 0 if node.left is None else node.left.height
+        r_height = 0 if node.right is None else node.right.height
+        node.height = max(l_height, r_height) + 1
+
+    def find_value(self, value):
+        def find_value_util(root, util):
             if root is None:
-                return 0
+                return False
+            if root.data == value:
+                return True
+            elif root.data > value:
+                return find_value_util(root.left, value)
             else:
-                return max(height_util(root.left), height_util(root.right)) + 1
-        return height_util(self.root)         
+                return find_value_util(root.right, value)
+        return find_value_util(self.root, value)                
 
     def add_value_bst(self, value):
         def add_value_bst_util(root, value):
             if root is None:
                 return Node(value)
             if root.data >= value:
-                root.left = add_value_bst_util(root.left, value)
+                root.left = add_value_bst_util(root.left, value)                
             else:
                 root.right = add_value_bst_util(root.right, value)
+            self.update_height(root)
             return self.balance(root)                
         
-        if self.root is None:
-            self.root = Node(value)
-        else:
-            self.root = add_value_bst_util(self.root, value)  
+        self.root = add_value_bst_util(self.root, value)  
 
     def remove_value_bst(self, value):
         def remove_value_bst_util(root, value):
@@ -64,28 +73,34 @@ class AVLTree(object):
                     root.data = node.data
                     node.data = value
                     root.right = remove_value_bst_util(root.right, value)
+            self.update_height(root)        
             return self.balance(root)
             
-        self.root = remove_value_bst_util(self.root, value)              
+        if self.find_value(value):
+            self.root = remove_value_bst_util(self.root, value)
+        else:
+            raise ValueError("Value not Present")
     
     def balance(self, root):
         def height(root):
-            if root is None:
-                return 0
-            return max(height(root.left), height(root.right)) + 1
+            return 0 if root is None else root.height
 
         def rotate_right(root):
             if root is None: return
             node = root.left
             root.left = node.right
+            self.update_height(root)
             node.right = root
+            self.update_height(node)
             return node
 
         def rotate_left(root):
             if root is None: return
             node = root.right
             root.right = node.left
+            self.update_height(root)
             node.left = root
+            self.update_height(node)
             return node
 
         if root is None: return
@@ -106,48 +121,40 @@ class AVLTree(object):
                 return rotate_left(root)
         return root
 
-    def print_tree(self, node_length=2):
-        def get_parent_level(nodes, level):
-            return nodes[2**(level) - 1: 2**(level+1) - 1]
+    def print_tree(self, max_node_len=2):
+        print_tree(self.root, max_node_len)
 
-        def process_level(root, nodes, level, line_length):
-            if root is None: return
-            node_space = line_length // 2**(level)
-            if level == 0:
-                nodes.append(root)
-                print(str(nodes[len(nodes) - 1]).center(node_space, ' '), end='')
-            else:
-                for parent in get_parent_level(nodes, level - 1):
-                    if parent == 'X':
-                        
-                        value = 'X'
-                        print_value = ''
-                        nodes.append(value)
-                        print(print_value.center(node_space, ' '), end='') 
+def print_tree(root, max_node_len=2):
+    def get_root_height(root):
+        if root is None: return 0
+        return max(get_root_height(root.left), get_root_height(root.right)) + 1
+    def get_parents(level, nodes):
+        return nodes[2**level - 1: 2**(level+1) - 1]
+    def process_level(root, level, nodes):
+        node_length = line_length // (2**level)
+        if level == 0:
+            nodes.append(root)
+            print_value = str(root.data)
+            print(print_value.center(node_length, ' '), end='')
+        else:
+            for r in get_parents(level - 1, nodes):
+                value = 'X' if r == 'X' or r.left is None else r.left
+                print_value = '' if value == 'X' else str(value.data)
+                nodes.append(value)
+                print(print_value.center(node_length, ' '), end='')
 
-                        value = 'X'
-                        print_value = ''
-                        nodes.append(value)
-                        print(print_value.center(node_space, ' '), end='') 
-
-                    else:
-                        
-                        value = 'X' if parent.left is None else parent.left
-                        print_value = '' if parent.left is None else str(parent.left.data)
-                        nodes.append(value)
-                        print(print_value.center(node_space, ' '), end='')
-
-                        value = 'X' if parent.right is None else parent.right
-                        print_value = '' if parent.right is None else str(parent.right.data)
-                        nodes.append(value)
-                        print(print_value.center(node_space, ' '), end='')
-        
-        height = self.height()
-        nodes = []
-        line_length = 2**(height - 1) * 2 * node_length
-        for l in range(height):
-            process_level(self.root, nodes, l, line_length)
-            print()        
+                value = 'X' if r == 'X' or r.right is None else r.right
+                print_value = '' if value == 'X' else str(value.data)
+                nodes.append(value)
+                print(print_value.center(node_length, ' '), end='')        
+    if root is None: return
+    height = get_root_height(root)
+    line_length = 2**(height-1) * 2 * max_node_len
+    nodes = []
+    for level in range(height):
+        process_level(root, level, nodes)
+        print()    
+    print(root,'|', root.left, '|', root.right)
 
 if __name__ == "__main__":
     avl = AVLTree()
