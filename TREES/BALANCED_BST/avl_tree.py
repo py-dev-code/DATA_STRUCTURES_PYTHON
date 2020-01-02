@@ -15,8 +15,7 @@ class Node(object):
     def __repr__(self):
         return str(self.data)
 
-class AVLTree(object):
-    
+class AVLTree(object):    
     def __init__(self):
         self.root = None
 
@@ -29,7 +28,7 @@ class AVLTree(object):
         return height_util(self.root)  
 
     def find_value(self, value):
-        def find_value_util(root, util):
+        def find_value_util(root, value):
             if root is None:
                 return False
             if root.data == value:
@@ -50,10 +49,7 @@ class AVLTree(object):
                 root.right = add_value_bst_util(root.right, value)
             return self.balance(root)                
         
-        if self.root is None:
-            self.root = Node(value)
-        else:
-            self.root = add_value_bst_util(self.root, value)  
+        self.root = add_value_bst_util(self.root, value)  
 
     def remove_value_bst(self, value):
         def remove_value_bst_util(root, value):
