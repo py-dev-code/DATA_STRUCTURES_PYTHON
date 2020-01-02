@@ -38,8 +38,6 @@ class Trie(object):
             if node.children[index] is None:
                 return None
             node = node.children[index]
-        if node == self.root:
-            return None
         return node    
     
     def startsWith(self, prefix):
