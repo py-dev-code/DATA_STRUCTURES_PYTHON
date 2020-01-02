@@ -2,7 +2,6 @@ class BinaryHeap(object):
     '''
     A Min Priority Queue implementation by using Binary Heap.
     '''
-
     def __init__(self, unsorted_list = None):
         self.array = []
         self.size = 0
@@ -28,17 +27,15 @@ class BinaryHeap(object):
             raise ValueError("A Null Element cannot be inserted in the Heap.")
         self.array.append(value)
         self.size += 1
-        self.swim(len(self.array) - 1)
+        self.swim(self.size - 1)
         
     def swim(self, index):
         if index == 0: return
         # Find the Parent Node
         parent_index = (index - 1) // 2
-        while self.array[parent_index] > self.array[index]:
+        if self.array[parent_index] > self.array[index]:
             # swapping the values
-            temp = self.array[parent_index]
-            self.array[parent_index] = self.array[index]
-            self.array[index] = temp
+            self.array[parent_index], self.array[index] = self.array[index], self.array[parent_index]
             self.swim(parent_index)
 
     def peek(self):
@@ -58,8 +55,7 @@ class BinaryHeap(object):
     def removeAt(self, index):        
         # swapping the index element with last element
         temp = self.array[index]
-        self.array[index] = self.array[self.size - 1]
-        self.array[self.size - 1] = temp
+        self.array[index], self.array[self.size - 1] = self.array[self.size - 1], self.array[index]          
         self.array.remove(self.array[self.size - 1])
         self.size -= 1
         self.sink(index)        
@@ -76,11 +72,9 @@ class BinaryHeap(object):
         else:
             child_index = right_child
 
-        while self.array[child_index] < self.array[index]:
+        if self.array[child_index] < self.array[index]:
             # swapping the values
-            temp = self.array[child_index]
-            self.array[child_index] = self.array[index]
-            self.array[index] = temp
+            self.array[index], self.array[child_index] = self.array[child_index], self.array[index]
             self.sink(child_index)
 
     def __repr__(self):
