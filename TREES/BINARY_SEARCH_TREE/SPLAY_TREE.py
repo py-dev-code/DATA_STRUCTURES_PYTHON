@@ -143,7 +143,7 @@ class SplayTree(object):
         if left_tree.left:
             left_tree.left.parent = None
         
-        self.root = self.join(left_tree, right_tree)
+        self.root = self.join(left_tree.left, right_tree)
         left_tree = None
 
     def join(self, left_tree, right_tree):
